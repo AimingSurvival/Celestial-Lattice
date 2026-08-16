@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Celestial-Lattice
 =======
 # Celestial Lattice Elastic Scatterer
@@ -234,4 +234,4 @@ Potential extensions include:
 The most important conceptual distinction is that the lattice bodies are fixed. Consequently, the collision law is a specular reflection from a rigid spherical boundary rather than the two-body elastic-collision formula used when both masses are free to move.
 
 That distinction should remain explicit in any report or presentation based on this simulator.
->>>>>>> 5541890 (Initial computational physics simulator)
+
