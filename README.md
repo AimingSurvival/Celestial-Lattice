@@ -1,6 +1,3 @@
-
-# Celestial-Lattice
-=======
 # Celestial Lattice Elastic Scatterer
 
 A browser-native 3D computational-physics simulator for a projectile moving through a finite cubic lattice of fixed spherical scatterers. The trajectory is generated deterministically from exact ray-sphere collision geometry and perfectly elastic specular reflection.
@@ -235,3 +232,13 @@ The most important conceptual distinction is that the lattice bodies are fixed. 
 
 That distinction should remain explicit in any report or presentation based on this simulator.
 
+## Visualization modes
+
+The interface provides two independent visualization modes:
+
+- **3D mode**: full cubic lattice, with the projectile following the spatial collision trajectory.
+- **2D mode**: planar square lattice, with a genuinely two-dimensional collision solver and top-down visualization.
+
+Pressing **Run simulation** starts the projectile at the origin. The camera enters a cinematic follow mode, tracks the projectile through successive free-flight segments, and progressively reveals the trajectory and collision markers. After the target number of collisions is reached, interactive camera controls are restored.
+
+The **Step** control reveals one collision segment at a time without cinematic camera motion.
