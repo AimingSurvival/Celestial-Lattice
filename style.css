@@ -3,7 +3,7 @@
 body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; background: radial-gradient(circle at 40% 20%, #111936 0%, #050816 55%, #03040b 100%); }
 button, input { font: inherit; }
 #app { width: 100vw; height: 100vh; position: relative; }
-canvas { display: block; }
+canvas { display: block; position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; }
 .panel { position: absolute; z-index: 10; top: 16px; left: 16px; width: 360px; max-height: calc(100vh - 32px); overflow: auto; padding: 16px; border: 1px solid rgba(255,255,255,.10); border-radius: 16px; background: rgba(8,12,28,.84); backdrop-filter: blur(14px); box-shadow: 0 16px 40px rgba(0,0,0,.35); }
 .panel h1 { margin: 0 0 4px; font-size: 20px; }
 .panel p { margin: 6px 0; color: #b9c2df; font-size: 12px; line-height: 1.45; }

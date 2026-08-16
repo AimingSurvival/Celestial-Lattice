@@ -133,7 +133,7 @@ document.querySelector('#run').onclick=runSimulation;
 document.querySelector('#reset').onclick=()=>{running=false;displaySegment=0;projectile.position.set(0,0,0);updateStats();};
 document.querySelector('#step').onclick=()=>{if(!result)runSimulation();running=false;if(result){placeProjectile(displaySegment+1);updateStats();}};
 
-buildLattice(readParams()); updateStats();
+runSimulation();
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
 function animate(now){requestAnimationFrame(animate);controls.update();if(running&&result&&displaySegment<result.positions.length-1){const interval=Math.max(10,val('animMs'));if(now-lastAdvance>=interval){placeProjectile(displaySegment+1);lastAdvance=now;updateStats();}}else if(running&&result)running=false;renderer.render(scene,camera);}
 requestAnimationFrame(animate);
