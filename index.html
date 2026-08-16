@@ -9,7 +9,28 @@
 <body>
 <div id="app">
   <aside class="panel">
-    <h1>Celestial Lattice Scatterer</h1>
+    <div class="title-row">
+      <h1>Celestial Lattice Scatterer</h1>
+      <div class="info-wrap">
+        <button class="info-button" type="button" aria-label="Show parameter and control information" aria-describedby="info-tooltip">i</button>
+        <div class="info-tooltip" id="info-tooltip" role="tooltip">
+          <strong>What the controls mean</strong>
+          <div><b>Spacing a:</b> distance between neighboring lattice-sphere centers.</div>
+          <div><b>Obstacle radius:</b> radius of each fixed spherical scatterer.</div>
+          <div><b>Projectile radius:</b> radius of the moving ball. Collision occurs when center-to-center distance reaches the sum of the two radii.</div>
+          <div><b>Speed v:</b> initial speed of the projectile. In this fixed-scatterer model it stays constant after elastic reflections, so changing it changes time-of-flight, not the geometric path.</div>
+          <div><b>Angle θ:</b> initial direction angle in the x-y plane, measured from the +x axis.</div>
+          <div><b>Collisions:</b> number of collision events to calculate, unless the projectile exits the finite lattice first.</div>
+          <div><b>Lattice half-extent:</b> number of lattice cells from the origin in each ±x, ±y and ±z direction. The rendered lattice therefore contains (2H+1)³ spheres.</div>
+          <div><b>Animation:</b> delay between displayed collision segments in milliseconds. It changes visualization speed only.</div>
+          <div><b>Run simulation:</b> recomputes the trajectory from the current parameters.</div>
+          <div><b>Step:</b> advances the projectile by one collision at a time.</div>
+          <div><b>Reset:</b> returns the displayed projectile to the origin without deleting the computed result.</div>
+          <div><b>Visualization:</b> blue spheres are the lattice, the pink line is the trajectory, yellow points mark collision locations, and the white sphere is the projectile.</div>
+          <div><b>Physics:</b> collisions are perfectly elastic and specular against fixed scatterers, so speed is conserved while direction changes.</div>
+        </div>
+      </div>
+    </div>
     <p>A fixed cubic lattice of spherical scatterers. The projectile undergoes perfectly elastic, specular reflections and we record its location after each collision.</p>
     <div class="grid">
       <div class="field"><label>Spacing a</label><input id="spacing" type="number" step="0.1" min="0.2" value="4"></div>
