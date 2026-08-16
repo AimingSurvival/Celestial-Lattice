@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: "Celestial Lattice Elastic Scatterer"
+message: "If you use this simulator or its implementation in academic work, please cite this repository."
+type: software
+version: "1.0.0"
+date-released: "2026-08-16"
+authors:
+  - family-names: Agrawal
+    given-names: Ojas
+keywords:
+  - computational physics
+  - elastic scattering
+  - lattice dynamics
+  - ray tracing
+  - collision detection
+  - Three.js
+  - WebGL
+license: "NOASSERTION"

@@ -1,0 +1,22 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node / build artifacts (future-proofing)
+node_modules/
+dist/
+build/
+coverage/
+
+# Local tooling
+.env
+.env.*
+*.log
+
+# Python local server/cache
+__pycache__/
+.pytest_cache/

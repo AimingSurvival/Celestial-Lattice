@@ -1,0 +1,25 @@
+:root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #eef2ff; background: #050816; font-synthesis: none; text-rendering: optimizeLegibility; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; background: radial-gradient(circle at 40% 20%, #111936 0%, #050816 55%, #03040b 100%); }
+button, input { font: inherit; }
+#app { width: 100vw; height: 100vh; position: relative; }
+canvas { display: block; }
+.panel { position: absolute; z-index: 10; top: 16px; left: 16px; width: 360px; max-height: calc(100vh - 32px); overflow: auto; padding: 16px; border: 1px solid rgba(255,255,255,.10); border-radius: 16px; background: rgba(8,12,28,.84); backdrop-filter: blur(14px); box-shadow: 0 16px 40px rgba(0,0,0,.35); }
+.panel h1 { margin: 0 0 4px; font-size: 20px; }
+.panel p { margin: 6px 0; color: #b9c2df; font-size: 12px; line-height: 1.45; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.field { display: grid; gap: 5px; }
+.field label { font-size: 11px; color: #aab5d5; }
+.field input { width: 100%; padding: 8px 9px; border-radius: 9px; border: 1px solid rgba(255,255,255,.11); background: #0c1230; color: #eef2ff; }
+.actions { display: flex; gap: 8px; margin-top: 12px; }
+button { flex: 1; padding: 9px 11px; border: 0; border-radius: 9px; cursor: pointer; color: #f8fafc; background: #334155; }
+button.primary { background: #2563eb; }
+button.secondary { background: #18213f; }
+button:hover { filter: brightness(1.08); }
+.stat { margin-top: 12px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,.045); font-size: 12px; line-height: 1.6; }
+.stat strong { color: #fff; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; color: #aeb8d6; font-size: 11px; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+.dot.lattice { background: #7dd3fc; } .dot.trajectory { background: #fb7185; } .dot.projectile { background: #f8fafc; }
+.hint { margin-top: 10px; color: #7f8aaa; font-size: 10px; line-height: 1.4; }
+@media (max-width: 700px) { .panel { width: calc(100vw - 32px); } }
