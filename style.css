@@ -25,6 +25,10 @@ canvas { display: block; position: fixed; inset: 0; width: 100vw; height: 100vh;
 .field label { font-size: 11px; color: #aab5d5; }
 .field input { width: 100%; padding: 8px 9px; border-radius: 9px; border: 1px solid rgba(255,255,255,.11); background: #0c1230; color: #eef2ff; }
 .field input:disabled { opacity: .62; cursor: not-allowed; }
+.navigation-section { margin-top: 12px; }
+.key-hints { display: flex; flex-wrap: wrap; gap: 6px; color: #9faacc; font-size: 10px; line-height: 1.4; }
+.key-hints span { display: inline-flex; align-items: center; gap: 3px; padding: 4px 6px; border: 1px solid rgba(255,255,255,.07); border-radius: 7px; background: rgba(255,255,255,.025); }
+kbd { min-width: 18px; padding: 2px 4px; border: 1px solid rgba(255,255,255,.16); border-bottom-width: 2px; border-radius: 4px; background: #0c1230; color: #dbeafe; font-size: 9px; font-family: inherit; text-align: center; }
 .actions { display: flex; gap: 8px; margin-top: 12px; }
 button { flex: 1; padding: 9px 11px; border: 0; border-radius: 9px; cursor: pointer; color: #f8fafc; background: #334155; }
 button.primary { background: #2563eb; } button.secondary { background: #18213f; } button:hover { filter: brightness(1.08); }

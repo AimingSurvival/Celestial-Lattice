@@ -380,17 +380,37 @@ function syncSourceUI() {
   if (latticeMode) projectileInput.value = document.querySelector('#obstacleRadius').value;
 }
 
-function setSource(nextSource, rerun = true) {
-  source = nextSource;
-  syncSourceUI();
-  if (rerun) runSimulation();
+function prepareIdleScene() {
+  const params = readParams();
+  if (source === 'lattice') {
+    document.querySelector('#projectileRadius').value = params.obstacleRadius;
+  }
+  buildLattice(readParams());
+  clearGroup(pathGroup);
+  result = null;
+  displaySegment = 0;
+  running = false;
+  cinematic = false;
+  controls.enabled = true;
+  projectile.scale.setScalar(effectiveProjectileRadius(readParams(), source) / 0.45);
+  projectile.position.set(0, 0, 0);
+  projectile.visible = true;
+  updateStats();
+  updateRecord();
 }
 
-function setMode(nextMode, rerun = true) {
+function setSource(nextSource) {
+  source = nextSource;
+  syncSourceUI();
+  prepareIdleScene();
+}
+
+function setMode(nextMode) {
   mode = nextMode;
   modeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
   document.querySelector('#mode-label').textContent = mode === '3D' ? '3D spatial lattice' : '2D planar lattice';
-  if (rerun) runSimulation();
+  document.querySelectorAll('.three-d-only').forEach(el => el.style.display = mode === '3D' ? '' : 'none');
+  prepareIdleScene();
 }
 
 function runSimulation() {
@@ -423,6 +443,12 @@ function runSimulation() {
 }
 
 document.querySelector('#run').onclick = runSimulation;
+document.querySelector('#stop').onclick = () => {
+  running = false;
+  cinematic = false;
+  controls.enabled = true;
+  updateStats();
+};
 document.querySelector('#reset').onclick = () => {
   running = false;
   cinematic = false;
@@ -432,30 +458,59 @@ document.querySelector('#reset').onclick = () => {
     projectile.position.copy(result.start);
     revealTrajectory(0);
     frameCamera(result);
-  } else projectile.position.set(0, 0, 0);
+  } else {
+    projectile.position.set(0, 0, 0);
+    buildLattice(readParams());
+  }
   updateStats();
   updateRecord();
-};
-document.querySelector('#step').onclick = () => {
-  if (!result) runSimulation();
-  running = false;
-  cinematic = false;
-  controls.enabled = true;
-  if (result) {
-    placeProjectile(displaySegment + 1);
-    updateStats();
-    updateRecord();
-  }
 };
 modeButtons.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
 sourceButtons.forEach(btn => btn.addEventListener('click', () => setSource(btn.dataset.source)));
 document.querySelector('#obstacleRadius').addEventListener('input', () => { if (source === 'lattice') document.querySelector('#projectileRadius').value = document.querySelector('#obstacleRadius').value; });
 document.querySelector('#downloadCsv').addEventListener('click', downloadCSV);
 
-setMode('3D', false);
-setSource('injected', false);
-updateRecord();
-runSimulation();
+setMode('3D');
+setSource('injected');
+syncSourceUI();
+prepareIdleScene();
+
+const pressedKeys = new Set();
+let shiftHeld = false;
+const navigationKeys = new Set(['w','a','s','d','q','e','arrowup','arrowdown','arrowleft','arrowright']);
+window.addEventListener('keydown', (event) => {
+  const key = event.key.toLowerCase();
+  if (!navigationKeys.has(key)) return;
+  if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target.isContentEditable) return;
+  event.preventDefault();
+  pressedKeys.add(key);
+  if (event.key === 'Shift') shiftHeld = true;
+});
+window.addEventListener('keyup', (event) => {
+  pressedKeys.delete(event.key.toLowerCase());
+  if (event.key === 'Shift') shiftHeld = false;
+});
+window.addEventListener('blur', () => { pressedKeys.clear(); shiftHeld = false; });
+
+function navigateLattice(deltaSeconds) {
+  if (!pressedKeys.size) return;
+  const p = readParams();
+  const base = Math.max(0.08, p.spacing * 1.5);
+  const speed = (shiftHeld ? base * 4 : base) * deltaSeconds;
+  let dx = 0, dy = 0, dz = 0;
+  if (pressedKeys.has('w') || pressedKeys.has('arrowup')) dy += speed;
+  if (pressedKeys.has('s') || pressedKeys.has('arrowdown')) dy -= speed;
+  if (pressedKeys.has('a') || pressedKeys.has('arrowleft')) dx -= speed;
+  if (pressedKeys.has('d') || pressedKeys.has('arrowright')) dx += speed;
+  if (mode === '3D') {
+    if (pressedKeys.has('q')) dz += speed;
+    if (pressedKeys.has('e')) dz -= speed;
+  }
+  if (dx === 0 && dy === 0 && dz === 0) return;
+  const delta = new THREE.Vector3(dx, dy, dz);
+  camera.position.add(delta);
+  controls.target.add(delta);
+}
 
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
@@ -463,8 +518,12 @@ addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);
 });
 
+let lastFrameTime = performance.now();
 function animate(now) {
   requestAnimationFrame(animate);
+  const deltaSeconds = Math.min(0.05, Math.max(0, (now - lastFrameTime) / 1000));
+  lastFrameTime = now;
+  navigateLattice(deltaSeconds);
   if (running && result && displaySegment < result.positions.length - 1) {
     const interval = Math.max(10, val('animMs'));
     if (now - lastAdvance >= interval) {

@@ -75,9 +75,24 @@
 
     <div class="actions">
       <button class="primary" id="run" type="button">Run simulation</button>
-      <button class="secondary" id="step" type="button">Step</button>
+      <button class="secondary" id="stop" type="button">Stop</button>
       <button class="secondary" id="reset" type="button">Reset</button>
     </div>
+
+    <section class="control-section navigation-section">
+      <div class="section-title-row">
+        <span>Keyboard navigation</span>
+        <span class="info-wrap"><button class="info-button" type="button" aria-label="Information about keyboard navigation">i</button><span class="field-tooltip">Use W or ↑ to move the view +Y, S or ↓ to move −Y, A or ← to move −X, and D or → to move +X. In 3D, Q moves +Z and E moves −Z. Hold Shift for faster movement. This moves the camera view, not the simulated particle.</span></span>
+      </div>
+      <div class="key-hints" aria-label="Keyboard navigation controls">
+        <span><kbd>W</kbd>/<kbd>↑</kbd> +Y</span>
+        <span><kbd>S</kbd>/<kbd>↓</kbd> −Y</span>
+        <span><kbd>A</kbd>/<kbd>←</kbd> −X</span>
+        <span><kbd>D</kbd>/<kbd>→</kbd> +X</span>
+        <span class="three-d-only"><kbd>Q</kbd> +Z</span>
+        <span class="three-d-only"><kbd>E</kbd> −Z</span>
+      </div>
+    </section>
 
     <div class="stat" id="stats"></div>
 
@@ -103,7 +118,7 @@
       <span><span class="dot collision"></span>collision</span>
       <span><span class="dot projectile"></span>moving ball</span>
     </div>
-    <div class="hint">Run starts at the origin. The camera follows the moving ball during the animation and progressively reveals the collision path. After the run, drag to orbit and scroll to zoom.</div>
+    <div class="hint">The simulation is idle after refresh. Click Run simulation to start from the origin. During a run, the camera follows the moving ball and progressively reveals the collision path. Use W/A/S/D or arrow keys to navigate the lattice view.</div>
   </aside>
 </div>
 <script type="importmap">
