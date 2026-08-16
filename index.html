@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Celestial Lattice Elastic Scatterer</title>
+  <title>Celestial Lattice Scatterer</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
@@ -11,60 +11,99 @@
   <aside class="panel">
     <div class="title-row">
       <h1>Celestial Lattice Scatterer</h1>
-      <div class="info-wrap">
-        <button class="info-button" type="button" aria-label="Show parameter and control information" aria-describedby="info-tooltip">i</button>
-        <div class="info-tooltip" id="info-tooltip" role="tooltip">
-          <strong>What the controls mean</strong>
-          <div><b>3D mode:</b> shows the full cubic lattice and the true spatial trajectory.</div>
-          <div><b>2D mode:</b> uses a planar square lattice and solves the corresponding two-dimensional scattering problem.</div>
-          <div><b>Spacing a:</b> distance between neighboring lattice-sphere centers.</div>
-          <div><b>Obstacle radius:</b> radius of each fixed spherical scatterer.</div>
-          <div><b>Projectile radius:</b> radius of the moving ball. Collision occurs when center-to-center distance reaches the sum of the two radii.</div>
-          <div><b>Speed v:</b> initial speed. It stays constant after perfectly elastic reflections, so it changes time-of-flight but not the geometric path.</div>
-          <div><b>Angle θ:</b> initial direction angle in the x-y plane, measured from +x.</div>
-          <div><b>Collisions:</b> number of collision events to calculate.</div>
-          <div><b>Lattice half-extent:</b> number of lattice cells from the origin in each direction.</div>
-          <div><b>Animation:</b> delay between displayed collision segments.</div>
-          <div><b>Run simulation:</b> recomputes the trajectory and starts the cinematic particle-following animation from the origin.</div>
-          <div><b>Step:</b> advances one collision at a time and reveals the path reached so far.</div>
-          <div><b>Reset:</b> returns the projectile to the origin and restores interactive camera control.</div>
-          <div><b>Physics:</b> collisions are perfectly elastic and specular against fixed scatterers, so speed is conserved while direction changes.</div>
-        </div>
-      </div>
     </div>
-    <p>A fixed cubic or planar lattice of spherical scatterers. The projectile undergoes perfectly elastic, specular reflections and we record its location after each collision.</p>
+    <p>A fixed cubic or planar lattice of spherical scatterers. Choose whether the moving particle is an injected projectile or one of the lattice balls itself.</p>
 
-    <div class="mode-block">
-      <div class="mode-header"><span>Visualization mode</span><span id="mode-label">3D spatial lattice</span></div>
+    <section class="control-section">
+      <div class="section-title-row">
+        <span>Visualization mode</span>
+        <span class="info-wrap"><button class="info-button" type="button" aria-label="Information about visualization mode">i</button><span class="field-tooltip">3D renders the full cubic lattice and spatial trajectory. 2D uses a planar square lattice and a true two-dimensional collision calculation.</span></span>
+        <span id="mode-label" class="section-value">3D spatial lattice</span>
+      </div>
       <div class="mode-switch" role="group" aria-label="Choose visualization mode">
         <button class="mode-button active" data-mode="3D" type="button">3D</button>
         <button class="mode-button" data-mode="2D" type="button">2D</button>
       </div>
-    </div>
+    </section>
+
+    <section class="control-section">
+      <div class="section-title-row">
+        <span>Moving entity</span>
+        <span class="info-wrap"><button class="info-button" type="button" aria-label="Information about moving entity">i</button><span class="field-tooltip">Injected projectile keeps the original model: a new white ball starts at the origin. Lattice ball makes one lattice sphere itself the moving particle, removes it from the static lattice, and gives it the same radius as every other sphere.</span></span>
+        <span id="source-label" class="section-value">Injected projectile</span>
+      </div>
+      <div class="mode-switch" role="group" aria-label="Choose moving entity model">
+        <button class="source-button active" data-source="injected" type="button">Injected ball</button>
+        <button class="source-button" data-source="lattice" type="button">Lattice ball</button>
+      </div>
+    </section>
 
     <div class="grid">
-      <div class="field"><label>Spacing a</label><input id="spacing" type="number" step="0.1" min="0.2" value="4"></div>
-      <div class="field"><label>Obstacle radius</label><input id="obstacleRadius" type="number" step="0.05" min="0.05" value="1.55"></div>
-      <div class="field"><label>Projectile radius</label><input id="projectileRadius" type="number" step="0.05" min="0.01" value="0.40"></div>
-      <div class="field"><label>Speed v</label><input id="speed" type="number" step="0.1" min="0.01" value="6"></div>
-      <div class="field"><label>Angle θ (deg)</label><input id="theta" type="number" step="1" value="31"></div>
-      <div class="field"><label>Collisions</label><input id="collisions" type="number" step="1" min="1" value="100"></div>
-      <div class="field"><label>Lattice half-extent</label><input id="halfExtent" type="number" step="1" min="2" value="22"></div>
-      <div class="field"><label>Animation (ms / segment)</label><input id="animMs" type="number" step="10" min="10" value="70"></div>
+      <div class="field">
+        <div class="label-row"><label for="spacing">Spacing a</label><span class="info-wrap"><button class="info-button" type="button" aria-label="Information about spacing">i</button><span class="field-tooltip">Center-to-center distance between neighboring lattice spheres. It controls the lattice scale and collision geometry.</span></span></div>
+        <input id="spacing" type="number" step="0.1" min="0.2" value="4">
+      </div>
+      <div class="field">
+        <div class="label-row"><label for="obstacleRadius">Obstacle radius</label><span class="info-wrap"><button class="info-button" type="button" aria-label="Information about obstacle radius">i</button><span class="field-tooltip">Radius of every fixed lattice sphere. In Lattice ball mode, the moving sphere uses this exact same radius.</span></span></div>
+        <input id="obstacleRadius" type="number" step="0.05" min="0.05" value="1.55">
+      </div>
+      <div class="field">
+        <div class="label-row"><label for="projectileRadius">Projectile radius</label><span class="info-wrap"><button class="info-button" type="button" aria-label="Information about projectile radius">i</button><span class="field-tooltip">Radius of the injected moving ball. Collision occurs when center-to-center distance equals obstacle radius plus projectile radius. Locked to obstacle radius in Lattice ball mode.</span></span></div>
+        <input id="projectileRadius" type="number" step="0.05" min="0.01" value="0.40">
+      </div>
+      <div class="field">
+        <div class="label-row"><label for="speed">Speed v</label><span class="info-wrap"><button class="info-button" type="button" aria-label="Information about speed">i</button><span class="field-tooltip">Initial speed of the moving particle. Perfectly elastic fixed-scatterer collisions conserve its speed, so v changes time-of-flight but not the geometric path.</span></span></div>
+        <input id="speed" type="number" step="0.1" min="0.01" value="6">
+      </div>
+      <div class="field">
+        <div class="label-row"><label for="theta">Angle θ (deg)</label><span class="info-wrap"><button class="info-button" type="button" aria-label="Information about angle">i</button><span class="field-tooltip">Initial direction angle in the x-y plane, measured counterclockwise from +x. In 3D this version still starts with zero z-component.</span></span></div>
+        <input id="theta" type="number" step="1" value="31">
+      </div>
+      <div class="field">
+        <div class="label-row"><label for="collisions">Collisions</label><span class="info-wrap"><button class="info-button" type="button" aria-label="Information about collision count">i</button><span class="field-tooltip">Target number of collision events to compute and animate. The table records every collision reached.</span></span></div>
+        <input id="collisions" type="number" step="1" min="1" value="100">
+      </div>
+      <div class="field">
+        <div class="label-row"><label for="halfExtent">Lattice half-extent</label><span class="info-wrap"><button class="info-button" type="button" aria-label="Information about lattice half-extent">i</button><span class="field-tooltip">Number of lattice indices retained on each side of the origin. A finite rendering/search domain replaces the mathematically infinite lattice.</span></span></div>
+        <input id="halfExtent" type="number" step="1" min="2" value="22">
+      </div>
+      <div class="field">
+        <div class="label-row"><label for="animMs">Animation (ms / segment)</label><span class="info-wrap"><button class="info-button" type="button" aria-label="Information about animation speed">i</button><span class="field-tooltip">Delay used to reveal one collision segment at a time during the cinematic run. Smaller values make the animation faster.</span></span></div>
+        <input id="animMs" type="number" step="10" min="10" value="70">
+      </div>
     </div>
+
     <div class="actions">
-      <button class="primary" id="run">Run simulation</button>
-      <button class="secondary" id="step">Step</button>
-      <button class="secondary" id="reset">Reset</button>
+      <button class="primary" id="run" type="button">Run simulation</button>
+      <button class="secondary" id="step" type="button">Step</button>
+      <button class="secondary" id="reset" type="button">Reset</button>
     </div>
+
     <div class="stat" id="stats"></div>
+
+    <section class="results-panel">
+      <div class="results-header">
+        <div><strong>Simulation record</strong><span class="info-wrap"><button class="info-button" type="button" aria-label="Information about simulation record">i</button><span class="field-tooltip">The record stores the exact settings used and the collision-by-collision state. Coordinates are the moving sphere center at each collision.</span></span></div>
+        <button class="download-button" id="downloadCsv" type="button">CSV</button>
+      </div>
+      <div class="settings-record" id="settingsRecord"></div>
+      <div class="table-wrap">
+        <table id="collisionTable">
+          <thead>
+            <tr><th>#</th><th>x</th><th>y</th><th>z</th><th>vₓ</th><th>vᵧ</th><th>v_z</th><th>flight Δt</th><th>time</th></tr>
+          </thead>
+          <tbody id="collisionBody"></tbody>
+        </table>
+      </div>
+    </section>
+
     <div class="legend">
       <span><span class="dot lattice"></span>lattice</span>
       <span><span class="dot trajectory"></span>trajectory</span>
       <span><span class="dot collision"></span>collision</span>
-      <span><span class="dot projectile"></span>projectile</span>
+      <span><span class="dot projectile"></span>moving ball</span>
     </div>
-    <div class="hint">Run starts at the green origin marker. The camera follows the projectile during the animation and progressively reveals the collision path. After the run, drag to orbit and scroll to zoom.</div>
+    <div class="hint">Run starts at the origin. The camera follows the moving ball during the animation and progressively reveals the collision path. After the run, drag to orbit and scroll to zoom.</div>
   </aside>
 </div>
 <script type="importmap">

@@ -4,9 +4,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const EPS = 1e-9;
 const MIN_T = 1e-7;
 
-function offsetCenter(spacing) { return 0.48 * spacing; }
+function latticeOffset(spacing, source) { return source === 'lattice' ? 0 : 0.48 * spacing; }
 function latticeIndex1D(value, spacing, offset) { return Math.floor((value - offset) / spacing + 0.5); }
 function center1D(index, spacing, offset) { return offset + index * spacing; }
+
+function effectiveProjectileRadius(params, source) {
+  return source === 'lattice' ? params.obstacleRadius : params.projectileRadius;
+}
 
 function raySphereT(origin, directionUnit, center, radius) {
   const oc = origin.clone().sub(center);
@@ -22,10 +26,10 @@ function raySphereT(origin, directionUnit, center, radius) {
   return Infinity;
 }
 
-function firstCollision3D(origin, directionUnit, params) {
+function firstCollision3D(origin, directionUnit, params, source) {
   const { spacing, halfExtent } = params;
-  const collisionRadius = params.obstacleRadius + params.projectileRadius;
-  const offset = offsetCenter(spacing);
+  const collisionRadius = params.obstacleRadius + effectiveProjectileRadius(params, source);
+  const offset = latticeOffset(spacing, source);
   let cell = new THREE.Vector3(
     latticeIndex1D(origin.x, spacing, offset),
     latticeIndex1D(origin.y, spacing, offset),
@@ -58,6 +62,7 @@ function firstCollision3D(origin, directionUnit, params) {
       const ix = cell.x + dx, iy = cell.y + dy, iz = cell.z + dz;
       if (Math.abs(ix) > halfExtent || Math.abs(iy) > halfExtent || Math.abs(iz) > halfExtent) continue;
       const c = new THREE.Vector3(center1D(ix, spacing, offset), center1D(iy, spacing, offset), center1D(iz, spacing, offset));
+      if (source === 'lattice' && c.lengthSq() < 1e-14) continue;
       const t = raySphereT(origin, dir, c, collisionRadius);
       if (t < bestT) { bestT = t; bestCenter = c; }
     }
@@ -72,10 +77,10 @@ function firstCollision3D(origin, directionUnit, params) {
   return null;
 }
 
-function firstCollision2D(origin, directionUnit, params) {
+function firstCollision2D(origin, directionUnit, params, source) {
   const { spacing, halfExtent } = params;
-  const collisionRadius = params.obstacleRadius + params.projectileRadius;
-  const offset = offsetCenter(spacing);
+  const collisionRadius = params.obstacleRadius + effectiveProjectileRadius(params, source);
+  const offset = latticeOffset(spacing, source);
   let cx = latticeIndex1D(origin.x, spacing, offset);
   let cy = latticeIndex1D(origin.y, spacing, offset);
   if (Math.abs(cx) > halfExtent || Math.abs(cy) > halfExtent) return null;
@@ -98,6 +103,7 @@ function firstCollision2D(origin, directionUnit, params) {
     for (let ix = cx - 1; ix <= cx + 1; ix++) for (let iy = cy - 1; iy <= cy + 1; iy++) {
       if (Math.abs(ix) > halfExtent || Math.abs(iy) > halfExtent) continue;
       const c = new THREE.Vector3(center1D(ix, spacing, offset), center1D(iy, spacing, offset), 0);
+      if (source === 'lattice' && c.lengthSq() < 1e-14) continue;
       const t = raySphereT(origin, directionUnit, c, collisionRadius);
       if (t < bestT) { bestT = t; bestCenter = c; }
     }
@@ -111,7 +117,7 @@ function firstCollision2D(origin, directionUnit, params) {
   return null;
 }
 
-function simulate(params, mode) {
+function simulate(params, mode, source) {
   const start = new THREE.Vector3(0, 0, 0);
   const theta = params.thetaDeg * Math.PI / 180;
   const initialVelocity = new THREE.Vector3(Math.cos(theta), Math.sin(theta), 0).multiplyScalar(params.speed);
@@ -120,7 +126,7 @@ function simulate(params, mode) {
   let reason = 'collision target reached';
 
   for (let i = 0; i < params.collisionTarget; i++) {
-    const hit = mode === '2D' ? firstCollision2D(p, v.clone().normalize(), params) : firstCollision3D(p, v.clone().normalize(), params);
+    const hit = mode === '2D' ? firstCollision2D(p, v.clone().normalize(), params, source) : firstCollision3D(p, v.clone().normalize(), params, source);
     if (!hit) { reason = 'left the finite lattice / no further collision'; break; }
     const point = p.clone().add(v.clone().multiplyScalar(hit.t / params.speed));
     if (mode === '2D') point.z = 0;
@@ -148,7 +154,9 @@ const readParams = () => ({
 });
 
 const modeButtons = [...document.querySelectorAll('[data-mode]')];
+const sourceButtons = [...document.querySelectorAll('[data-source]')];
 let mode = '3D';
+let source = 'injected';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x050816);
@@ -197,18 +205,21 @@ function buildLattice(params) {
   const mesh = new THREE.InstancedMesh(geometry, material, total);
   const dummy = new THREE.Object3D();
   let k = 0;
-  const o = offsetCenter(params.spacing);
+  const o = latticeOffset(params.spacing, source);
   if (mode === '2D') {
     for (let x = -params.halfExtent; x <= params.halfExtent; x++) for (let y = -params.halfExtent; y <= params.halfExtent; y++) {
+      if (source === 'lattice' && x === 0 && y === 0) continue;
       dummy.position.set(o + x * params.spacing, o + y * params.spacing, 0);
       dummy.updateMatrix(); mesh.setMatrixAt(k++, dummy.matrix);
     }
   } else {
     for (let x = -params.halfExtent; x <= params.halfExtent; x++) for (let y = -params.halfExtent; y <= params.halfExtent; y++) for (let z = -params.halfExtent; z <= params.halfExtent; z++) {
+      if (source === 'lattice' && x === 0 && y === 0 && z === 0) continue;
       dummy.position.set(o + x * params.spacing, o + y * params.spacing, o + z * params.spacing);
       dummy.updateMatrix(); mesh.setMatrixAt(k++, dummy.matrix);
     }
   }
+  mesh.count = k;
   mesh.instanceMatrix.needsUpdate = true;
   latticeGroup.add(mesh);
   const extent = (params.halfExtent + 1) * params.spacing;
@@ -235,7 +246,7 @@ function addTrajectory(res) {
   line.userData.pointsCount = res.positions.length;
 
   for (const e of res.collisions) {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(.105, 8, 6), new THREE.MeshBasicMaterial({ color: 0xfbbf24 }));
+    const m = new THREE.Mesh(new THREE.SphereGeometry(Math.max(.08, effectiveProjectileRadius(readParams(), source) * .08), 8, 6), new THREE.MeshBasicMaterial({ color: 0xfbbf24 }));
     m.position.copy(e.point); m.visible = false; m.userData.segment = e.index; m.userData.isCollisionMarker = true;
     pathGroup.add(m);
   }
@@ -249,13 +260,48 @@ function revealTrajectory(segment) {
   }
 }
 
+function fmt(n) { return Number(n).toFixed(5); }
+
+function updateRecord() {
+  const settings = document.querySelector('#settingsRecord');
+  const body = document.querySelector('#collisionBody');
+  if (!result) {
+    settings.innerHTML = '<div><span>Status</span><b>No simulation</b></div>';
+    body.innerHTML = '';
+    return;
+  }
+  const p = readParams();
+  const rows = [
+    ['Mode', mode], ['Moving entity', source === 'lattice' ? 'Lattice ball' : 'Injected ball'],
+    ['Spacing a', p.spacing], ['Obstacle radius', p.obstacleRadius], ['Moving radius', effectiveProjectileRadius(p, source)],
+    ['Speed v', p.speed], ['Angle θ', `${p.thetaDeg}°`], ['Target collisions', p.collisionTarget],
+    ['Half-extent', p.halfExtent], ['Animation', `${val('animMs')} ms / segment`], ['Reached', `${result.collisions.length} / ${p.collisionTarget}`]
+  ];
+  settings.innerHTML = rows.map(([k,v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('');
+  const startRow = `<tr><td>0</td><td>${fmt(result.start.x)}</td><td>${fmt(result.start.y)}</td><td>${fmt(result.start.z)}</td><td>${fmt(result.initialVelocity.x)}</td><td>${fmt(result.initialVelocity.y)}</td><td>${fmt(result.initialVelocity.z)}</td><td>—</td><td>0.00000</td></tr>`;
+  body.innerHTML = startRow + result.collisions.map(e => `<tr><td>${e.index}</td><td>${fmt(e.point.x)}</td><td>${fmt(e.point.y)}</td><td>${fmt(e.point.z)}</td><td>${fmt(e.velocityAfter.x)}</td><td>${fmt(e.velocityAfter.y)}</td><td>${fmt(e.velocityAfter.z)}</td><td>${fmt(e.flightTime)}</td><td>${fmt(e.cumulativeTime)}</td></tr>`).join('');
+}
+
+function downloadCSV() {
+  if (!result) return;
+  const p = readParams();
+  const lines = [];
+  lines.push(['mode', mode, 'moving_entity', source, 'spacing_a', p.spacing, 'obstacle_radius', p.obstacleRadius, 'moving_radius', effectiveProjectileRadius(p, source), 'speed', p.speed, 'theta_deg', p.thetaDeg, 'target_collisions', p.collisionTarget, 'half_extent', p.halfExtent].join(','));
+  lines.push('collision,x,y,z,vx,vy,vz,flight_time,cumulative_time');
+  for (const e of result.collisions) lines.push([e.index,e.point.x,e.point.y,e.point.z,e.velocityAfter.x,e.velocityAfter.y,e.velocityAfter.z,e.flightTime,e.cumulativeTime].join(','));
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `celestial-lattice-${mode.toLowerCase()}-${source}-history.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
 function updateStats() {
   if (!result) {
     statsEl.innerHTML = '<strong>Ready.</strong><br>Run the simulation to compute the collision sequence.';
     return;
   }
   const last = result.collisions.at(-1), p = last?.point ?? result.start, speed = last?.velocityAfter.length() ?? result.initialVelocity.length();
-  statsEl.innerHTML = `<strong>${result.collisions.length}</strong> / ${readParams().collisionTarget} collisions<br>Position: (<strong>${p.x.toFixed(4)}</strong>, <strong>${p.y.toFixed(4)}</strong>, <strong>${p.z.toFixed(4)}</strong>)<br>Speed: <strong>${speed.toFixed(5)}</strong> &nbsp;|&nbsp; |Δv| max error: <strong>${result.maxSpeedError.toExponential(2)}</strong><br>Flight time: <strong>${result.totalTime.toFixed(5)}</strong><br>Mode: <strong>${mode}</strong> &nbsp;|&nbsp; Status: <strong>${result.reachedTarget ? 'target reached' : result.terminatedReason}</strong>`;
+  statsEl.innerHTML = `<strong>${result.collisions.length}</strong> / ${readParams().collisionTarget} collisions<br>Position: (<strong>${p.x.toFixed(4)}</strong>, <strong>${p.y.toFixed(4)}</strong>, <strong>${p.z.toFixed(4)}</strong>)<br>Speed: <strong>${speed.toFixed(5)}</strong> &nbsp;|&nbsp; |Δv| max error: <strong>${result.maxSpeedError.toExponential(2)}</strong><br>Flight time: <strong>${result.totalTime.toFixed(5)}</strong><br>Mode: <strong>${mode}</strong> &nbsp;|&nbsp; Moving entity: <strong>${source === 'lattice' ? 'lattice ball' : 'injected ball'}</strong> &nbsp;|&nbsp; Status: <strong>${result.reachedTarget ? 'target reached' : result.terminatedReason}</strong>`;
 }
 
 function placeProjectile(segment) {
@@ -324,6 +370,22 @@ let running = false;
 let cinematic = false;
 let lastAdvance = performance.now();
 
+function syncSourceUI() {
+  const latticeMode = source === 'lattice';
+  sourceButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.source === source));
+  document.querySelector('#source-label').textContent = latticeMode ? 'Lattice ball' : 'Injected projectile';
+  const projectileInput = document.querySelector('#projectileRadius');
+  projectileInput.disabled = latticeMode;
+  projectileInput.title = latticeMode ? 'Locked: moving lattice ball has the same radius as each lattice sphere.' : '';
+  if (latticeMode) projectileInput.value = document.querySelector('#obstacleRadius').value;
+}
+
+function setSource(nextSource, rerun = true) {
+  source = nextSource;
+  syncSourceUI();
+  if (rerun) runSimulation();
+}
+
 function setMode(nextMode, rerun = true) {
   mode = nextMode;
   modeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
@@ -333,18 +395,28 @@ function setMode(nextMode, rerun = true) {
 
 function runSimulation() {
   const params = readParams();
-  if (params.obstacleRadius + params.projectileRadius >= params.spacing * 0.5) {
+  if (source === 'lattice') {
+    document.querySelector('#projectileRadius').value = params.obstacleRadius;
+    params.projectileRadius = params.obstacleRadius;
+    if (2 * params.obstacleRadius >= params.spacing) {
+      running = false;
+      statsEl.innerHTML = '<strong>Invalid geometry:</strong><br>equal lattice balls require 2 × obstacle radius < spacing a.';
+      return;
+    }
+  } else if (params.obstacleRadius + params.projectileRadius >= params.spacing * 0.5) {
     running = false;
     statsEl.innerHTML = '<strong>Invalid geometry:</strong><br>obstacle radius + projectile radius must be less than a/2.';
     return;
   }
   buildLattice(params);
-  result = simulate(params, mode);
+  projectile.scale.setScalar(effectiveProjectileRadius(params, source) / 0.45);
+  result = simulate(params, mode, source);
   addTrajectory(result);
   displaySegment = 0;
   projectile.position.copy(result.start);
   revealTrajectory(0);
   updateStats();
+  updateRecord();
   beginCinematicCamera();
   running = true;
   lastAdvance = performance.now();
@@ -362,6 +434,7 @@ document.querySelector('#reset').onclick = () => {
     frameCamera(result);
   } else projectile.position.set(0, 0, 0);
   updateStats();
+  updateRecord();
 };
 document.querySelector('#step').onclick = () => {
   if (!result) runSimulation();
@@ -371,11 +444,17 @@ document.querySelector('#step').onclick = () => {
   if (result) {
     placeProjectile(displaySegment + 1);
     updateStats();
+    updateRecord();
   }
 };
 modeButtons.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+sourceButtons.forEach(btn => btn.addEventListener('click', () => setSource(btn.dataset.source)));
+document.querySelector('#obstacleRadius').addEventListener('input', () => { if (source === 'lattice') document.querySelector('#projectileRadius').value = document.querySelector('#obstacleRadius').value; });
+document.querySelector('#downloadCsv').addEventListener('click', downloadCSV);
 
 setMode('3D', false);
+setSource('injected', false);
+updateRecord();
 runSimulation();
 
 addEventListener('resize', () => {

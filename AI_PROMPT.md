@@ -202,3 +202,16 @@ Produce:
 Do not replace exact collision geometry with arbitrary random direction changes.
 
 The central requirement is deterministic physics, efficient collision detection, and a visually convincing 3D representation that can scale to substantially more than 100 collisions in later versions.
+
+## New interface and physics modes
+
+The implementation must expose two independent choices:
+
+1. **Visualization mode:** 2D planar or 3D spatial.
+2. **Moving-entity mode:**
+   - **Injected ball:** preserve the original model, with a separate projectile radius and a phase-shifted fixed lattice so the origin is free.
+   - **Lattice ball:** make the sphere located at the lattice origin the moving particle, remove it from the static lattice, use the same radius for every sphere, and begin the trajectory from the origin.
+
+The UI should place a small individual `i` information control beside each parameter/section. Each tooltip must explain only the item beside it rather than presenting one large global help card.
+
+After every simulation, the interface should show a reproducible run record containing the exact settings plus a collision-history table from state 0 (origin) through every collision reached. The history should include collision index, position, post-collision velocity, flight time, and cumulative time, with an option to export the record as CSV.

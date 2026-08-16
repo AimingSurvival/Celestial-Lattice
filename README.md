@@ -1,6 +1,6 @@
 # Celestial Lattice Elastic Scatterer
 
-A browser-native 3D computational-physics simulator for a projectile moving through a finite cubic lattice of fixed spherical scatterers. The trajectory is generated deterministically from exact ray-sphere collision geometry and perfectly elastic specular reflection.
+A browser-native computational-physics simulator for deterministic elastic scattering through finite 2D or 3D lattices of spherical scatterers. The trajectory is generated from exact ray-sphere collision geometry and perfectly elastic specular reflection.
 
 > **Research scope:** despite the project name, this first model is not a gravitational celestial-mechanics simulation. It is a fixed-scatterer transport / Lorentz-gas-style model. Gravity, moving bodies, and other celestial-mechanics effects are reserved for later extensions.
 
@@ -12,7 +12,7 @@ After enabling Pages with **Settings → Pages → Source: GitHub Actions**, the
 
 ## What the simulation solves
 
-A projectile sphere starts at the origin with speed `v` and initial direction
+The simulator supports two moving-entity models. In **Injected ball** mode, a new projectile sphere starts at the origin. In **Lattice ball** mode, the sphere at the origin is itself the moving lattice entity; it is removed from the static lattice and moves with the same radius as every other lattice sphere. Both modes use initial speed `v` and direction
 
 `v0 = v [cos(theta), sin(theta), 0]`
 
@@ -78,8 +78,9 @@ The explicit finite lattice requires `O(H^3)` instances for visualization. GPU i
 - Lattice spheres are fixed.
 - Collisions are frictionless and perfectly elastic.
 - No gravity, drag, electromagnetic field, or external force is applied.
-- The projectile starts at the origin.
-- The lattice is phase-shifted by `0.48a` along each axis so the initial point is not inside a scatterer.
+- The moving particle starts at the origin.
+- Injected-ball mode uses a `0.48a` phase shift so the origin is between lattice sites.
+- Lattice-ball mode uses lattice sites at integer multiples of `a`, removes the origin sphere from the static lattice, and uses equal moving/static radii.
 - The first version uses a cubic lattice only.
 - The geometry validator rejects `Ro + Rp >= a/2`, preventing overlapping effective collision envelopes.
 - The finite lattice is an approximation to the ideal infinite lattice. A trajectory leaving the finite region is reported as a clean termination.
@@ -88,6 +89,8 @@ The explicit finite lattice requires `O(H^3)` instances for visualization. GPU i
 
 The visualizer provides controls for:
 
+- 2D or 3D visualization mode
+- injected-ball or lattice-ball moving-entity mode
 - lattice spacing `a`
 - obstacle radius
 - projectile radius
@@ -105,6 +108,9 @@ It reports:
 - maximum speed-conservation error
 - cumulative flight time
 - termination status
+- a settings record for the exact run
+- a collision-history table containing the origin and every reached collision
+- CSV export of the recorded settings and collision history
 
 The 3D camera supports orbit and zoom interaction.
 
